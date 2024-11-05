@@ -41,15 +41,22 @@
         ];
 
         const balls = [];
+        const states = {
+            isPlaying: false,
+            score: 0
+        };
 
         canvas.addEventListener('click', (event) => {
             const x = event.clientX;
             const y = event.clientY;
-              balls.push(new Ball(x, y));
+            balls.push(new Ball(x, y));
+            const canvas = document.getElementById('Canvas');
         });
 
         const maxspeed = 15;
         const minspeed = 2.5;
+        const minradius = 5;
+        const maxradius = 50;
 
         class Ball {
             constructor(x, y) {
@@ -58,26 +65,34 @@
                 //   this.targetY = y;
                 this.speedx = ((Math.random() - 0.5) * (maxspeed - minspeed));
                 this.speedy = ((Math.random() - 0.5) * (maxspeed - minspeed));
-                
+
                 //   this.exploded = false;
                 //   this.particles = [];
-                this.radius = 5;
+                this.radius = (Math.random() * (maxradius - minradius) + minradius);
+
+                const calcSpeed = () => (
+                    (Math.random() - 0.5) * (maxspeed - maxradius / this.radius)
+                )
+
+                this.speedx = calcSpeed();
+                this.speedy = calcSpeed();
+            
                 this.color = colors[parseInt(Math.round(Math.random() * colors.length))];
                 console.log(this)
             }
 
             update() {
 
-                if (this.y > canvas.height) {
+                if (this.y > canvas.height - this.radius) {
                     this.speedy = -this.speedy;
                 }
-                if (this.x > canvas.width) {
+                if (this.x > canvas.width-this.radius) {
                     this.speedx = -this.speedx;
                 }
-                if (this.y < 0) {
+                if (this.y < this.radius) {
                     this.speedy = -this.speedy;
                 }
-                if (this.x < 0) {
+                if (this.x < this.radius) {
                     this.speedx = -this.speedx;
                 }
                 this.y = this.y + this.speedy;
@@ -122,26 +137,26 @@
         }
 
         function drawStats() {
-                        ctx.fillStyle ='white';
+            ctx.fillStyle = 'white';
 
             ctx.font = '25px Arial';
-               ctx.fillText(`Ball Count: ${ balls.length}`, 100, 100);   
-
+            ctx.fillText(`Ball Count: ${balls.length}`, 100, 100);
         }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            drawStats()
             //ctx.fillStyle ='green';
             //ctx.fillRect(0,0, canvas.width, canvas.height);
-      //      ctx.font = '50px Arial';
-      //      ctx.fillText('HAPPY 4th of July!!!', 100, 100);
-            balls.forEach((firework, index) => {
-                firework.update();
-                firework.draw();
-         
+            //      ctx.font = '50px Arial';
+            //      ctx.fillText('HAPPY 4th of July!!!', 100, 100);
+            balls.forEach((ball, index) => {
+                ball.update();
+                ball.draw();
+
             });
+            drawStats()
+
             requestAnimationFrame(animate);
         }
 
