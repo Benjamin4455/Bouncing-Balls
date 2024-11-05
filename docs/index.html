@@ -40,12 +40,12 @@
             '128,0,128'   // Purple (Secondary)
         ];
 
-        const fireworks = [];
+        const balls = [];
 
         canvas.addEventListener('click', (event) => {
             const x = event.clientX;
             const y = event.clientY;
-              fireworks.push(new Ball(x, y));
+              balls.push(new Ball(x, y));
         });
 
         const maxspeed = 15;
@@ -121,15 +121,23 @@
             }
         }
 
+        function drawStats() {
+                        ctx.fillStyle ='white';
 
+            ctx.font = '25px Arial';
+               ctx.fillText(`Ball Count: ${ balls.length}`, 100, 100);   
+
+        }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawStats()
             //ctx.fillStyle ='green';
             //ctx.fillRect(0,0, canvas.width, canvas.height);
       //      ctx.font = '50px Arial';
       //      ctx.fillText('HAPPY 4th of July!!!', 100, 100);
-            fireworks.forEach((firework, index) => {
+            balls.forEach((firework, index) => {
                 firework.update();
                 firework.draw();
          
