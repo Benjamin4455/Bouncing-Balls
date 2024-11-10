@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.js"
+        integrity="sha512-mqr23d0r7XRGkwhyhJHFW5KY2dKbNOgI2+3uI98xuDgZ/fJBP2vDtQ2PkUg2WJSzmyf5X6btJfAZC9F3ZPoF+w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>Happy ball bouncing!!</title>
+
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background: black;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="Canvas"></canvas>
+    <script>
+
+        const canvas = document.getElementById('Canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const colors = [
+            '255,0,0',    // Red (Primary)
+            '0,0,255',    // Blue (Primary)
+            '255,255,0',  // Yellow (Primary)
+            '0,255,0',    // Green (Secondary)
+            '255,165,0',  // Orange (Secondary)
+            '128,0,128'   // Purple (Secondary)
+        ];
+
+        const {
+            Engine,
+            Render,
+            Bodies,
+            Body,
+            World,
+            Composite
+        } = Matter;
+
+        const engine = Engine.create();
+
+        const { world } = engine;
+
+        engine.world.gravity.y = 0;
+
+        const bodies = [];
+
+        const stage = Body.create({
+            parts: [
+                Bodies.rectangle(canvas.width / 2, -canvas.height/2, canvas.width, 10),
+                Bodies.rectangle(canvas.width / 2, canvas.height/2, canvas.width, 10),
+                Bodies.rectangle(-canvas.width / 2, canvas.height/2, 10, canvas.height),
+                Bodies.rectangle(canvas.width / 2, canvas.height/2, 10, canvas.height),
+            ],
+            isStatic: true,
+        })
+        World.add(world, stage);
+
+
+        let balls = [];
+        const states = {
+            isPlaying: false,
+            score: 0,
+            maxBalls: parseInt(localStorage.getItem('maxBalls') || 0)
+        };
+
+        canvas.addEventListener('click', (event) => {
+            const x = event.clientX;
+            const y = event.clientY;
+            balls.push(new Ball(x, y));
+            const canvas = document.getElementById('Canvas');
+        });
+
+        const maxspeed = 15;
+        const minspeed = 2.5;
+        const minradius = 5;
+        const maxradius = 30;
+
+        class Ball {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                //   this.targetY = y;
+                this.speedx = ((Math.random() - 0.5) * (maxspeed - minspeed));
+                this.speedy = ((Math.random() - 0.5) * (maxspeed - minspeed));
+
+                //   this.exploded = false;
+                //   this.particles = [];
+                this.radius = (Math.random() * (maxradius - minradius) + minradius);
+
+                const calcSpeed = () => (
+                    (Math.random() - 0.5) * (maxradius * 2 / this.radius)
+                )
+
+                this.speedx = calcSpeed();
+                this.speedy = calcSpeed();
+
+                this.color = colors[parseInt(Math.round(Math.random() * colors.length))];
+                //console.log(this)
+                this.alive = true;
+
+                this.body = Bodies.circle(this.x, this.y, this.radius,
+                    {
+                        restitution: 1,
+                        friction: -0.1,
+                    }
+                )
+                Body.setVelocity(this.body, {x: this.speedx, y: this.speedy})
+
+                World.add(world, this.body);
+            }
+
+            move() {
+
+            }
+
+
+            draw() {
+                ctx.beginPath();
+                //debugger
+                ctx.arc(this.body.position.x, this.body.position.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgb(${this.color})`;
+                ctx.fill();
+            }
+
+        }
+
+        function drawStats() {
+            ctx.fillStyle = 'white';
+
+            ctx.font = '20px Arial';
+            ctx.fillText(`Ball Count: ${balls.length}`, 25, 50);
+            ctx.fillText(`High Score: ${states.maxBalls}`, 25, 75);
+        }
+
+        function animate() {
+            Engine.update(engine, 1000/60);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            balls.forEach((ball, index) => {
+                ball.draw();
+            });
+            // remove dead balls
+            balls = balls.filter((b) => b.alive);
+            if (balls.length > states.maxBalls) {
+                states.maxBalls = balls.length;
+                localStorage.setItem('maxBalls', states.maxBalls)
+            }
+            drawStats()
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+
+</html>
