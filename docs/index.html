@@ -11,10 +11,12 @@
         html {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
             background: black;
+            color: #ddd;
+        }
+        body {
+            padding: 5%;
+
         }
 
         canvas {
@@ -24,143 +26,20 @@
 </head>
 
 <body>
-    <canvas id="Canvas"></canvas>
-    <script>
+   <h1>Bouncing Ball Games and Fun</h1>
 
-        const canvas = document.getElementById('Canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const colors = [
-            '255,0,0',    // Red (Primary)
-            '0,0,255',    // Blue (Primary)
-            '255,255,0',  // Yellow (Primary)
-            '0,255,0',    // Green (Secondary)
-            '255,165,0',  // Orange (Secondary)
-            '128,0,128'   // Purple (Secondary)
-        ];
+   <h2>Version 1</h2>
+   <p>Bouncing off walls only and disappearing on collision.</p>
+   <p>High score based on max balls alive at a time.</p>
+   <a href='version-1.html' target="_blank" >Version 1 </a>
+   <iframe src="version-1.html" width=480 height=480>   </iframe>
 
-        let balls = [];
-        const states = {
-            isPlaying: false,
-            score: 0,
-            maxBalls: parseInt(localStorage.getItem('maxBalls') || 0)
-        };
 
-        canvas.addEventListener('click', (event) => {
-            const x = event.clientX;
-            const y = event.clientY;
-            balls.push(new Ball(x, y));
-            const canvas = document.getElementById('Canvas');
-        });
+   <h2>Version 2</h2>
+   <p>We tried to do our own physics. It's hard, but fun to watch (bugs and all)</p>
+   <a href='version-2.html' target="_blank" >Version 2</a>
+   <iframe src="version-2.html" width=480 height=480>   </iframe>
 
-        const maxspeed = 15;
-        const minspeed = 2.5;
-        const minradius = 5;
-        const maxradius = 30;
-
-        class Ball {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                //   this.targetY = y;
-                this.speedx = ((Math.random() - 0.5) * (maxspeed - minspeed));
-                this.speedy = ((Math.random() - 0.5) * (maxspeed - minspeed));
-
-                //   this.exploded = false;
-                //   this.particles = [];
-                this.radius = (Math.random() * (maxradius - minradius) + minradius);
-
-                const calcSpeed = () => (
-                    (Math.random() - 0.5) * (maxradius * 2 / this.radius)
-                )
-
-                this.speedx = calcSpeed();
-                this.speedy = calcSpeed();
-
-                this.color = colors[parseInt(Math.round(Math.random() * colors.length))];
-                //console.log(this)
-                this.alive = true;
-            }
-
-            move() {
-
-                if (this.y > canvas.height - this.radius) {
-                    this.speedy = -this.speedy;
-                }
-                if (this.x > canvas.width - this.radius) {
-                    this.speedx = -this.speedx;
-                }
-                if (this.y < this.radius) {
-                    this.speedy = -this.speedy;
-                }
-                if (this.x < this.radius) {
-                    this.speedx = -this.speedx;
-                }
-                this.y = this.y + this.speedy;
-                this.x = this.x + this.speedx;
-            }
-
-            collision(index) {
-                function distance(x1, x2, y1, y2) {
-                    return Math.sqrt(Math.abs(x2 - x1)**2 + Math.abs(y2 - y1)**2)
-                }
-                balls.forEach((other, otherIdx) => {
-                    if (index == otherIdx)
-                        return
-
-                    const dist = distance(this.x, other.x, this.y, other.y)
-                    if (dist <= (this.radius + other.radius)) {
-                        //this.color = '255,100,100'
-                        //other.color = '255,100,100'
-                        this.alive = false
-                        this.alive = false
-                    }
-                });
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgb(${this.color})`;
-                ctx.fill();
-            }
-
-        }
-
-        function drawStats() {
-            ctx.fillStyle = 'white';
-
-            ctx.font = '20px Arial';
-            ctx.fillText(`Ball Count: ${balls.length}`, 25, 50);
-            ctx.fillText(`High Score: ${states.maxBalls}`, 25, 75);
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            //ctx.fillStyle ='green';
-            //ctx.fillRect(0,0, canvas.width, canvas.height);
-            //      ctx.font = '50px Arial';
-            //      ctx.fillText('HAPPY 4th of July!!!', 100, 100);
-            balls.forEach((ball, index) => {
-                ball.move();
-                ball.collision(index)
-                ball.draw();
-            });
-            // remove dead balls
-            balls = balls.filter((b) => b.alive);
-            if (balls.length > states.maxBalls) {
-                states.maxBalls = balls.length;
-                localStorage.setItem('maxBalls', states.maxBalls)
-            }
-            drawStats()
-
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-    </script>
 </body>
 
 </html>

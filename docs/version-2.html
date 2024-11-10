@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy ball bouncing!!</title>
+
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background: black;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="Canvas"></canvas>
+    <script>
+
+        const canvas = document.getElementById('Canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const colors = [
+            '255,0,0',    // Red (Primary)
+            '0,0,255',    // Blue (Primary)
+            '255,255,0',  // Yellow (Primary)
+            '0,255,0',    // Green (Secondary)
+            '255,165,0',  // Orange (Secondary)
+            '128,0,128'   // Purple (Secondary)
+        ];
+
+        let balls = [];
+        const states = {
+            isPlaying: false,
+            score: 0,
+            maxBalls: parseInt(localStorage.getItem('maxBalls') || 0)
+        };
+
+        canvas.addEventListener('click', (event) => {
+            const x = event.clientX;
+            const y = event.clientY;
+            balls.push(new Ball(x, y));
+            const canvas = document.getElementById('Canvas');
+        });
+
+        const maxspeed = 15;
+        const minspeed = 2.5;
+        const minradius = 5;
+        const maxradius = 30;
+
+        class Ball {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                //   this.targetY = y;
+                this.speedx = ((Math.random() - 0.5) * (maxspeed - minspeed));
+                this.speedy = ((Math.random() - 0.5) * (maxspeed - minspeed));
+
+                //   this.exploded = false;
+                //   this.particles = [];
+                this.radius = (Math.random() * (maxradius - minradius) + minradius);
+
+                const calcSpeed = () => (
+                    (Math.random() - 0.5) * (maxradius * 2 / this.radius)
+                )
+
+                this.speedx = calcSpeed();
+                this.speedy = calcSpeed();
+
+                this.color = colors[parseInt(Math.round(Math.random() * colors.length))];
+                //console.log(this)
+                this.alive = true;
+            }
+
+            move() {
+
+                if (this.y > canvas.height - this.radius) {
+                    this.speedy = -this.speedy;
+                }
+                if (this.x > canvas.width - this.radius) {
+                    this.speedx = -this.speedx;
+                }
+                if (this.y < this.radius) {
+                    this.speedy = -this.speedy;
+                }
+                if (this.x < this.radius) {
+                    this.speedx = -this.speedx;
+                }
+                this.y = this.y + this.speedy;
+                this.x = this.x + this.speedx;
+            }
+
+            collision(index) {
+                function distance(x1, x2, y1, y2) {
+                    return Math.sqrt(Math.abs(x2 - x1)**2 + Math.abs(y2 - y1)**2)
+                }
+                balls.forEach((other, otherIdx) => {
+                    if (index == otherIdx)
+                        return
+
+                    const dist = distance(this.x, other.x, this.y, other.y)
+            
+
+                    if (dist <= (this.radius + other.radius)) {
+                        const nx = (other.x - this.x) / dist;
+                        const ny = (other.y - this.y) / dist;
+                        const p = 2 * (this.speedx * nx + this.speedy * ny - other.speedx * nx - other.speedy * ny) /
+                                (this.radius + other.radius);
+                        
+                        this.speedx = this.speedx - p * this.radius * nx;
+                        this.speedy = this.speedy - p * this.radius * ny;
+                        other.speedx = other.speedx + p * other.radius * nx;
+                        other.speedy = other.speedy + p * other.radius * ny;
+
+
+                        //this.alive = false
+                        //other.alive = false
+                    }
+                });
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgb(${this.color})`;
+                ctx.fill();
+            }
+
+        }
+
+        function drawStats() {
+            ctx.fillStyle = 'white';
+
+            ctx.font = '20px Arial';
+            ctx.fillText(`Ball Count: ${balls.length}`, 25, 50);
+            ctx.fillText(`High Score: ${states.maxBalls}`, 25, 75);
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            //ctx.fillStyle ='green';
+            //ctx.fillRect(0,0, canvas.width, canvas.height);
+            //      ctx.font = '50px Arial';
+            //      ctx.fillText('HAPPY 4th of July!!!', 100, 100);
+            balls.forEach((ball, index) => {
+                ball.collision(index)
+                ball.move();
+                ball.draw();
+            });
+            // remove dead balls
+            balls = balls.filter((b) => b.alive);
+            if (balls.length > states.maxBalls) {
+                states.maxBalls = balls.length;
+                localStorage.setItem('maxBalls', states.maxBalls)
+            }
+            drawStats()
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+
+</html>
