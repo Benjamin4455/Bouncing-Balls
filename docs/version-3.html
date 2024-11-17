@@ -57,15 +57,21 @@
         const { world } = engine;
 
         engine.world.gravity.y = 0;
+        engine.world.friction = 0;
 
         const bodies = [];
+        const thickness = 500;
+        const wallOptions = {
+            restitution: 1,
+            friction: 0
+        }
 
         const stage = Body.create({
             parts: [
-                Bodies.rectangle(canvas.width / 2, -canvas.height/2, canvas.width, 10),
-                Bodies.rectangle(canvas.width / 2, canvas.height/2, canvas.width, 10),
-                Bodies.rectangle(-canvas.width / 2, canvas.height/2, 10, canvas.height),
-                Bodies.rectangle(canvas.width / 2, canvas.height/2, 10, canvas.height),
+                Bodies.rectangle(0, canvas.height + thickness / 2, canvas.width * 10, thickness, wallOptions),
+                Bodies.rectangle(0, -thickness / 2, canvas.width * 10, thickness, wallOptions),
+                Bodies.rectangle(canvas.width + thickness / 2, 0, thickness, canvas.height * 10, wallOptions),
+                Bodies.rectangle(-thickness / 2, 0, thickness, canvas.height * 10, wallOptions),
             ],
             isStatic: true,
         })
@@ -117,7 +123,9 @@
                 this.body = Bodies.circle(this.x, this.y, this.radius,
                     {
                         restitution: 1,
-                        friction: -0.1,
+                        friction: 0.0,
+                        frictionAir: 0,
+                        //frictionStatic: 0 
                     }
                 )
                 Body.setVelocity(this.body, {x: this.speedx, y: this.speedy})
